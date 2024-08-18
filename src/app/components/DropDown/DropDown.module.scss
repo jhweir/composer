@@ -1,0 +1,24 @@
+.wrapper {
+  h1 {
+    margin-right: 10px;
+  }
+
+  .selectedOption {
+    position: relative;
+
+    > button {
+      all: unset;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      padding: 0 10px;
+    }
+
+    .options {
+      position: absolute;
+      left: 0;
+      top: 20px;
+      flex-direction: column;
+      z-index: 5;
+    }
+  }
+}

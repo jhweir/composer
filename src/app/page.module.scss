@@ -1,0 +1,24 @@
+.wrapper {
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+
+  .templates {
+    margin-top: 30px;
+
+    .template {
+      flex-direction: column;
+      margin: 10px;
+
+      > a {
+        margin-bottom: 10px;
+      }
+
+      > div {
+        width: 500px;
+        height: 300px;
+      }
+    }
+  }
+}
