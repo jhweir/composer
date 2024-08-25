@@ -1,9 +1,11 @@
 .wrapper {
+  display: flex;
   flex-direction: column;
   width: 100%;
   padding-left: 10px;
 
   .blockButton {
+    display: flex;
     justify-content: space-between;
 
     > p {
@@ -16,6 +18,5 @@
   }
 
   .children {
-    flex-direction: column;
   }
 }

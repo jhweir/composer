@@ -1,27 +1,45 @@
 "use client";
 
+import BlockPreview from "@/app/components/BlockPreview/BlockPreview";
 import BlockSettings from "@/app/components/BlockSettings/BlockSettings";
 import BlockTree from "@/app/components/BlockTree/BlockTree";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import Block from "../../components/Block/Block";
+import Block from "../components/Block/Block";
 import styles from "./page.module.scss";
 
 function newBlock() {
   return {
     id: uuidv4(),
     name: "",
-    options: { direction: "row", size: "1/1" },
+    options: {
+      span: { x: 1, y: 1 },
+      grid: { x: 2, y: 2, flow: "Vertical", gap: 0, padding: 0 },
+    },
     type: "we://collection", // 'we://image', 'we://audio' etc.
+    depth: 0,
     blocks: [],
   };
 }
 
-export default function TemplateBuilder(props: { params: any }) {
-  const { templateId } = props.params;
-  const [rootBlock, setRootBlock] = useState(newBlock());
-  const [selectedBlock, setSelectedBlock] = useState(newBlock());
+export default function Composer() {
+  const searchParams = useSearchParams();
+  const templateId = searchParams.get("templateId");
+  const [rootBlock, setRootBlock] = useState({
+    ...newBlock(),
+    name: "Template",
+  });
+  const [selectedBlock, setSelectedBlock] = useState(rootBlock);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [dragState, setDragState] = useState({
+    width: 0,
+    height: 0,
+    xOffset: 0,
+    yOffset: 0,
+  });
+  const [dragging, setDragging] = useState(false);
 
   function findBlock(id: string, block: any) {
     if (id === block.id) return block;
@@ -49,11 +67,12 @@ export default function TemplateBuilder(props: { params: any }) {
     setRootBlock(newRootBlock);
   }
 
-  function editBlock(blockId: string, options: any) {
+  function editBlock(blockId: string, setting: string, value: any) {
     const newRootBlock = { ...rootBlock };
     const block = findBlock(blockId, newRootBlock);
-    block.options = options;
+    block[setting] = value;
     setRootBlock(newRootBlock);
+    setSelectedBlock(block);
   }
 
   function deleteBlock(blockId: string) {
@@ -64,11 +83,12 @@ export default function TemplateBuilder(props: { params: any }) {
   }
 
   function saveTemplate() {
-    const localTemplates = localStorage.getItem("templates");
-    const newTemplates = localTemplates ? [...JSON.parse(localTemplates)] : [];
+    const templates = localStorage.getItem("templates");
+    const newTemplates = templates ? [...JSON.parse(templates)] : [];
     const existingTemplate = newTemplates.find((t: any) => t.id === templateId);
     if (!existingTemplate) newTemplates.push(rootBlock);
     else {
+      existingTemplate.name = rootBlock.name;
       existingTemplate.options = rootBlock.options;
       existingTemplate.blocks = rootBlock.blocks;
     }
@@ -78,20 +98,18 @@ export default function TemplateBuilder(props: { params: any }) {
   // load template
   useEffect(() => {
     if (templateId !== "new") {
-      const localTemplates = localStorage.getItem("templates");
-      if (localTemplates) {
-        const template = JSON.parse(localTemplates).find(
-          (t: any) => t.id === templateId
-        );
+      const templates = localStorage.getItem("templates");
+      if (templates) {
+        const template = JSON.parse(templates).find((t: any) => t.id === templateId);
         setRootBlock(template);
         setSelectedBlock(template);
       }
     }
-  }, []);
+  }, [templateId]);
 
   return (
     <div className={styles.wrapper}>
-      <h1 style={{ marginBottom: 20 }}>Template builder</h1>
+      <h1 style={{ marginBottom: 20 }}>Composer</h1>
       <div className={styles.header}>
         <Link href="/" style={{ marginRight: 20 }}>
           Home
@@ -102,7 +120,7 @@ export default function TemplateBuilder(props: { params: any }) {
         <div className={styles.sidebar}>
           <BlockTree
             block={rootBlock}
-            position="Template"
+            position=""
             selectedBlock={selectedBlock}
             setSelectedBlock={setSelectedBlock}
           />
@@ -124,7 +142,25 @@ export default function TemplateBuilder(props: { params: any }) {
             editBlock={editBlock}
             selectedBlock={selectedBlock}
             setSelectedBlock={setSelectedBlock}
+            setDragging={setDragging}
+            setDragPosition={setDragPosition}
+            setDragState={setDragState}
           />
+          {dragging && (
+            <div
+              className={styles.dragLayer}
+              style={{
+                top: dragPosition.y - dragState.yOffset,
+                left: dragPosition.x - dragState.xOffset,
+                width: dragState.width,
+                height: dragState.height,
+                pointerEvents: "none",
+                zIndex: 1000,
+              }}
+            >
+              <BlockPreview block={selectedBlock} depth={4} />
+            </div>
+          )}
         </div>
       </div>
     </div>
