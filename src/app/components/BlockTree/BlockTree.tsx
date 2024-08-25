@@ -10,7 +10,7 @@ export default function BlockTree(props: {
   setSelectedBlock: (block: any) => void;
 }) {
   const { block, position, selectedBlock, setSelectedBlock } = props;
-  const { id } = block;
+  const { id, name } = block;
   const [selected, setSelected] = useState(selectedBlock.id === id);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -27,7 +27,9 @@ export default function BlockTree(props: {
           setSelectedBlock(block);
         }}
       >
-        <p className={selected ? styles.selected : ""}>{position}</p>
+        <p className={selected ? styles.selected : ""}>
+          {position} {name || ""}
+        </p>
         {/* {block.blocks.length > 0 && (
           <p style={{ transform: collapsed ? "rotate(180deg)" : "" }}>^</p>
         )} */}
@@ -38,9 +40,7 @@ export default function BlockTree(props: {
             <BlockTree
               key={b.id}
               block={b}
-              position={
-                position === "Template" ? `${i + 1}` : `${position}.${i + 1}`
-              }
+              position={!position ? `${i + 1}` : `${position}.${i + 1}`}
               selectedBlock={selectedBlock}
               setSelectedBlock={setSelectedBlock}
             />

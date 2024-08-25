@@ -10,22 +10,26 @@ export default function Home() {
 
   useEffect(() => {
     const localTemplates = localStorage.getItem("templates");
-    console.log("localTemplates: ", localTemplates);
-    if (localTemplates) setTemplates(JSON.parse(localTemplates));
+
+    if (localTemplates) {
+      console.log("localTemplates: ", JSON.parse(localTemplates));
+      setTemplates(JSON.parse(localTemplates));
+    }
   }, []);
 
   return (
     <div className={styles.wrapper}>
       {/* <h1>Welcome to WE</h1> */}
-      <Link href="/template-builder/new">New Template</Link>
+      <Link href="/composer?templateId=new">New Template</Link>
       <div className={styles.templates}>
         {templates.map((template) => (
-          <div className={styles.template} key={template.id}>
-            <Link href={`/template-builder/${template.id}`}>
-              ID: {template.id}
-            </Link>
-            <BlockPreview data={template} depth={0} />
-          </div>
+          <Link
+            href={`/composer?templateId=${template.id}`}
+            key={template.id}
+            className={styles.template}
+          >
+            <BlockPreview block={template} depth={0} />
+          </Link>
         ))}
       </div>
     </div>

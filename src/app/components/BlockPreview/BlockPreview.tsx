@@ -3,48 +3,41 @@
 import styles from "./BlockPreview.module.scss";
 
 export default function BlockPreview(props: {
-  data: any;
+  block: any;
   depth: number;
   parentBlock?: any;
 }) {
-  const { data, depth, parentBlock } = props;
-  const { options, blocks } = data;
-  const { direction, size } = options;
+  const { block, depth } = props;
+  const { options, blocks } = block;
+  const { span, grid } = options;
   const color = 255 - depth * 10;
 
-  function findStyle(): any {
-    const blockStyle = {} as any;
-    if (parentBlock) {
-      const paddingOffset = parentBlock.blocks.length
-        ? (10 * (parentBlock.blocks.length - 1)) / parentBlock.blocks.length
-        : 0;
-      if (parentBlock.options.direction === "row")
-        blockStyle.width = `calc(100% / ${size[2]} - ${paddingOffset}px)`;
-      else blockStyle.height = `calc(100% / ${size[2]} - ${paddingOffset}px)`;
-    }
-    return blockStyle;
+  function findSize(totalItems: number): any {
+    // calculates the pixel size of child blocks factoring the total number of items & gap size
+    return `calc(${100 / totalItems}% - ${
+      ((totalItems - 1) * grid.gap) / totalItems
+    }px)`;
   }
 
   return (
     <div
       className={styles.wrapper}
       style={{
-        ...findStyle(),
+        gridRow: `span ${span.y}`,
+        gridColumn: `span ${span.x}`,
+        gridTemplateRows: `repeat(${grid.y}, ${findSize(grid.y)})`,
+        gridTemplateColumns: `repeat(${grid.x}, ${findSize(grid.x)})`,
+        gridAutoRows: findSize(grid.y),
+        gridAutoColumns: findSize(grid.x),
+        gridAutoFlow: grid.flow === "Vertical" ? "row" : "column",
         backgroundColor: `rgba(${color},${color},${color})`,
+        gap: grid.gap,
+        padding: grid.padding,
       }}
     >
-      {blocks.length > 0 && (
-        <div className={styles.blocks} style={{ flexDirection: direction }}>
-          {blocks.map((block: any) => (
-            <BlockPreview
-              key={block.id}
-              data={block}
-              depth={depth + 1}
-              parentBlock={data}
-            />
-          ))}
-        </div>
-      )}
+      {blocks.map((b: any) => (
+        <BlockPreview key={b.id} block={b} depth={depth + 1} />
+      ))}
     </div>
   );
 }

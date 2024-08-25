@@ -1,4 +1,5 @@
 .wrapper {
+  display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
@@ -8,7 +9,6 @@
     margin-top: 30px;
 
     .template {
-      flex-direction: column;
       margin: 10px;
 
       > a {
