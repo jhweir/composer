@@ -4,17 +4,120 @@
   height: 100%;
   border: 1px solid #ddd;
   display: grid;
-  overflow: auto;
-  grid-auto-flow: column;
 
   &.selected {
     border: 1px solid #000000;
   }
 
-  .blockButton {
-    all: unset;
-    position: absolute;
+  .mainGrid {
     width: 100%;
     height: 100%;
+    display: grid;
+    overflow: auto;
+    grid-auto-flow: column;
+
+    .blockButton {
+      all: unset;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .resizers {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+
+      > div {
+        position: absolute;
+        pointer-events: all;
+        z-index: 1000;
+      }
+
+      .corner {
+        width: 10px;
+        height: 10px;
+
+        &.nw {
+          top: 0;
+          left: 0;
+          cursor: nw-resize;
+        }
+
+        &.ne {
+          top: 0;
+          right: 0;
+          cursor: ne-resize;
+        }
+
+        &.sw {
+          bottom: 0;
+          left: 0;
+          cursor: sw-resize;
+        }
+
+        &.se {
+          bottom: 0;
+          right: 0;
+          cursor: se-resize;
+        }
+      }
+
+      .edge {
+        &.n {
+          width: 100%;
+          height: 10px;
+          top: 0;
+          cursor: n-resize;
+        }
+
+        &.e {
+          width: 10px;
+          height: 100%;
+          right: 0;
+          cursor: e-resize;
+        }
+
+        &.s {
+          width: 100%;
+          height: 10px;
+          bottom: 0;
+          cursor: s-resize;
+        }
+
+        &.w {
+          width: 10px;
+          height: 100%;
+          left: 0;
+          cursor: w-resize;
+        }
+      }
+    }
+  }
+
+  .backgroundGrid {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    overflow: auto;
+    grid-auto-flow: column;
+
+    .dropspot {
+      width: 100%;
+      height: 100%;
+      background-color: red;
+    }
+
+    .lines {
+      position: absolute;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+      background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%),
+        repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);
+    }
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Block from "@/app/components/Block/Block";
 import BlockPreview from "@/app/components/BlockPreview/BlockPreview";
 import BlockSettings from "@/app/components/BlockSettings/BlockSettings";
 import BlockTree from "@/app/components/BlockTree/BlockTree";
@@ -7,7 +8,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import Block from "../components/Block/Block";
 import styles from "./page.module.scss";
 
 function newBlock() {
@@ -15,31 +15,24 @@ function newBlock() {
     id: uuidv4(),
     name: "",
     options: {
-      span: { x: 1, y: 1 },
-      grid: { x: 2, y: 2, flow: "Vertical", gap: 0, padding: 0 },
+      area: { y: 1, x: 1, y2: 2, x2: 2 },
+      grid: { width: 2, height: 2, flow: "Vertical", gap: 0, padding: 0 },
     },
     type: "we://collection", // 'we://image', 'we://audio' etc.
     depth: 0,
     blocks: [],
+    dropspot: false,
   };
 }
 
 export default function Composer() {
   const searchParams = useSearchParams();
   const templateId = searchParams.get("templateId");
-  const [rootBlock, setRootBlock] = useState({
-    ...newBlock(),
-    name: "Template",
-  });
+  const [rootBlock, setRootBlock] = useState<any>(null);
   const [selectedBlock, setSelectedBlock] = useState(rootBlock);
-  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
-  const [dragState, setDragState] = useState({
-    width: 0,
-    height: 0,
-    xOffset: 0,
-    yOffset: 0,
-  });
   const [dragging, setDragging] = useState(false);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [dragState, setDragState] = useState({ width: 0, height: 0, xOffset: 0, yOffset: 0 });
 
   function findBlock(id: string, block: any) {
     if (id === block.id) return block;
@@ -60,10 +53,37 @@ export default function Composer() {
     }
   }
 
+  function findNextAvailableSpace(parentBlock: any) {
+    const { options, blocks } = parentBlock;
+    const { grid, area } = options;
+    // loop through every space & check if occupied
+    for (let i = 0; i < grid.height; i++) {
+      for (let j = 0; j < grid.width; j++) {
+        const taken = blocks.find(
+          (b: any) => b.options.area.y === i + 1 && b.options.area.x === j + 1
+        );
+        if (!taken) return { isSpace: true, y: i + 1, x: j + 1 };
+      }
+    }
+    return { isSpace: false, y: 0, x: 0 };
+  }
+
   function addBlock(parentId: string) {
     const newRootBlock = { ...rootBlock };
     const parentBlock = findBlock(parentId, newRootBlock);
-    parentBlock.blocks.push(newBlock());
+    if (!parentBlock.blocks.length) parentBlock.blocks.push(newBlock());
+    else {
+      const { isSpace, y, x } = findNextAvailableSpace(parentBlock);
+      if (isSpace) {
+        parentBlock.blocks.push({
+          ...newBlock(),
+          options: {
+            area: { y, x, y2: y + 1, x2: x + 1 },
+            grid: { width: 2, height: 2, flow: "Vertical", gap: 0, padding: 0 },
+          },
+        });
+      }
+    }
     setRootBlock(newRootBlock);
   }
 
@@ -103,7 +123,9 @@ export default function Composer() {
         const template = JSON.parse(templates).find((t: any) => t.id === templateId);
         setRootBlock(template);
         setSelectedBlock(template);
-      }
+      } else setRootBlock({ ...newBlock(), name: "Template" });
+    } else {
+      setRootBlock({ ...newBlock(), name: "Template" });
     }
   }, [templateId]);
 
@@ -116,53 +138,53 @@ export default function Composer() {
         </Link>
         <button onClick={saveTemplate}>Save template</button>
       </div>
-      <div className={styles.content}>
-        <div className={styles.sidebar}>
-          <BlockTree
-            block={rootBlock}
-            position=""
-            selectedBlock={selectedBlock}
-            setSelectedBlock={setSelectedBlock}
-          />
-          {selectedBlock && (
-            <BlockSettings
-              block={selectedBlock}
-              parent={findParent(selectedBlock.id, rootBlock)}
+      {rootBlock && (
+        <div className={styles.content}>
+          <div className={styles.sidebar}>
+            <BlockTree
+              block={rootBlock}
+              position=""
+              selectedBlock={selectedBlock}
+              setSelectedBlock={setSelectedBlock}
+            />
+            {selectedBlock && (
+              <BlockSettings
+                block={selectedBlock}
+                parent={findParent(selectedBlock.id, rootBlock)}
+                addBlock={addBlock}
+                editBlock={editBlock}
+                deleteBlock={deleteBlock}
+              />
+            )}
+          </div>
+          <div className={styles.canvas}>
+            <Block
+              block={rootBlock}
+              depth={0}
               addBlock={addBlock}
               editBlock={editBlock}
-              deleteBlock={deleteBlock}
+              selectedBlock={selectedBlock}
+              setSelectedBlock={setSelectedBlock}
+              setDragging={setDragging}
+              setDragPosition={setDragPosition}
+              setDragState={setDragState}
             />
-          )}
+            {dragging && (
+              <div
+                className={styles.dragLayer}
+                style={{
+                  top: dragPosition.y - dragState.yOffset,
+                  left: dragPosition.x - dragState.xOffset,
+                  width: dragState.width,
+                  height: dragState.height,
+                }}
+              >
+                <BlockPreview block={selectedBlock} depth={4} />
+              </div>
+            )}
+          </div>
         </div>
-        <div className={styles.canvas}>
-          <Block
-            block={rootBlock}
-            depth={0}
-            addBlock={addBlock}
-            editBlock={editBlock}
-            selectedBlock={selectedBlock}
-            setSelectedBlock={setSelectedBlock}
-            setDragging={setDragging}
-            setDragPosition={setDragPosition}
-            setDragState={setDragState}
-          />
-          {dragging && (
-            <div
-              className={styles.dragLayer}
-              style={{
-                top: dragPosition.y - dragState.yOffset,
-                left: dragPosition.x - dragState.xOffset,
-                width: dragState.width,
-                height: dragState.height,
-                pointerEvents: "none",
-                zIndex: 1000,
-              }}
-            >
-              <BlockPreview block={selectedBlock} depth={4} />
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function BlockSettings(props: {
 }) {
   const { block, parent, addBlock, editBlock, deleteBlock } = props;
   const { id, name, options } = block;
-  const { span, grid } = options;
+  const { area, grid } = options;
 
   return (
     <div className={styles.wrapper}>
@@ -36,24 +36,24 @@ export default function BlockSettings(props: {
           <div style={{ display: "flex", gap: "20px" }}>
             <NumberInput
               title="Horizontal span"
-              value={span.x}
+              value={area.x2 - area.x}
               min={1}
               max={24}
               onChange={(value: number) => {
                 const newOptions = { ...options };
-                newOptions.span.x = value;
+                newOptions.area.x2 = newOptions.area.x + value;
                 editBlock(id, "options", newOptions);
               }}
             />
             <p>x</p>
             <NumberInput
               title="Vertical span"
-              value={span.y}
+              value={area.y2 - area.y}
               min={1}
               max={24}
               onChange={(value: number) => {
                 const newOptions = { ...options };
-                newOptions.span.y = value;
+                newOptions.area.y2 = newOptions.area.y + value;
                 editBlock(id, "options", newOptions);
               }}
             />
@@ -69,24 +69,24 @@ export default function BlockSettings(props: {
         <div style={{ display: "flex", gap: "20px" }}>
           <NumberInput
             title="Horizontal"
-            value={grid.x}
+            value={grid.width}
             min={1}
             max={24}
             onChange={(value: number) => {
               const newOptions = { ...options };
-              newOptions.grid.x = value;
+              newOptions.grid.width = value;
               editBlock(id, "options", newOptions);
             }}
           />
           <p>x</p>
           <NumberInput
             title="Vertical"
-            value={grid.y}
+            value={grid.height}
             min={1}
             max={24}
             onChange={(value: number) => {
               const newOptions = { ...options };
-              newOptions.grid.y = value;
+              newOptions.grid.height = value;
               editBlock(id, "options", newOptions);
             }}
           />
