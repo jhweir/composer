@@ -29,7 +29,7 @@ export default function Block(props: {
   } = props;
   const { id, options, blocks } = block;
   const { area, grid } = options;
-  const [selected, setSelected] = useState(selectedBlock.id === id);
+  const [selected, setSelected] = useState(selectedBlock?.id === id);
   const [isDraggedItem, setIsDraggedItem] = useState(false);
 
   const color = 255 - depth * 20;
@@ -102,7 +102,7 @@ export default function Block(props: {
   }
 
   useEffect(() => {
-    setSelected(selectedBlock.id === id);
+    setSelected(selectedBlock?.id === id);
   }, [selectedBlock, id]);
 
   function resize(event: any, direction: "n" | "e" | "s" | "w" | "nw" | "ne" | "sw" | "se") {

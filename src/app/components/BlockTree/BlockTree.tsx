@@ -11,11 +11,11 @@ export default function BlockTree(props: {
 }) {
   const { block, position, selectedBlock, setSelectedBlock } = props;
   const { id, name } = block;
-  const [selected, setSelected] = useState(selectedBlock.id === id);
+  const [selected, setSelected] = useState(selectedBlock?.id === id);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    setSelected(selectedBlock.id === id);
+    setSelected(selectedBlock?.id === id);
   }, [selectedBlock, id]);
 
   return (
